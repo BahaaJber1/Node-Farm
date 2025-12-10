@@ -1,8 +1,23 @@
 import fs from "fs";
+import http from "http"; // we gonna use this to implement a simple server
+
+const server = http.createServer((req, res) => {
+	console.log({ req });
+	res.end("Hello from the server!"); // the name will make sense when we create routes
+});
+
+// we use port 8000 to avoid conflicts with other servers that might be using the default port 3000
+// the second parameter is the localhost IP address which we don't to explicitly specify most of the time
+// after running the server, we notice that the terminal is blocked which means it can't do anything else until we stop the server which is something related to the event loop
+server.listen(8000, "127.0.0.1", () => {
+	console.log("Listening to requests on port 8000");
+});
+
+/*
+// Blocking, synchronous way
 
 // 1. Synchronous read
-
-// Not passing the encoding parameter will return a buffer object which is not human-readable
+//  - Not passing the encoding parameter will return a buffer object which is not human-readable
 const textInput = fs.readFileSync("./txt/input.txt", "utf-8");
 console.log({ textInput });
 
@@ -10,3 +25,28 @@ console.log({ textInput });
 const textOutput = `This is what we know about the avocado: ${textInput}\nCreated on ${new Date()}`;
 fs.writeFileSync("./txt/output.txt", textOutput);
 console.log("File written!");
+
+// Non-blocking, asynchronous way
+
+// 1. Asynchronous read
+//  - The first argument in the callback is for error handling most of the time
+//  - The second console.log outside the readFile callback will be executed first because readFile is non-blocking meaning it'll be running in the background
+fs.readFile("./txt/start.tt", "utf-8", (err, data) => {
+	console.log({ err, data });
+	if (err)
+		return console.log("Something went wrong while reading this file!", {
+			errorMessage: err,
+		});
+	fs.readFile(`./txt/${data}.txt`, "utf-8", (err1, data1) => {
+		console.log({ err1, data1 });
+		fs.readFile("./txt/append.txt", "utf-8", (err2, data2) => {
+			console.log({ err2, data2 });
+			fs.writeFile("./txt/final.txt", `${data1}\n${data2}`, (err3) => {
+				console.log({ err3 }, "File written!");
+			});
+		});
+	});
+});
+
+console.log("Will read file...");
+*/
