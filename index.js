@@ -1,9 +1,23 @@
 import fs from "fs";
 import http from "http"; // we gonna use this to implement a simple server
+import url from "url";
 
 const server = http.createServer((req, res) => {
-	console.log({ req });
-	res.end("Hello from the server!"); // the name will make sense when we create routes
+	const pathName = req.url;
+	if (pathName === "/" || pathName === "/overview") {
+		res.end("Welcome to our homepage");
+	} else if (pathName === "/product") {
+		res.end("Welcome to our product page");
+	} else {
+		// We can also set headers before sending the response
+		// ? whats a header you say? -> Headers are like metadata for the response, they give additional information about the response being sent to the client
+		// The header should be always set before sending the response using res.end()
+		res.writeHead(404, {
+			"Content-type": "text/html",
+			"my-own-header": "hello-world",
+		});
+		res.end("<h1>Page not found</h1>");
+	}
 });
 
 // we use port 8000 to avoid conflicts with other servers that might be using the default port 3000
