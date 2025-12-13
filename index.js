@@ -46,20 +46,59 @@ console.log("Will read file...");
 // Read data for the /api endpoint
 // it can be set as sync because it runs only once when the server starts
 const data = fs.readFileSync(`${__dirname}/dev-data/data.json`, "utf-8");
+const dataObj = JSON.parse(data);
+
+// Read HTML templates
+const overview = fs.readFileSync(
+	`${__dirname}/templates/overview.html`,
+	"utf-8"
+);
+const product = fs.readFileSync(`${__dirname}/templates/product.html`, "utf-8");
+const card = fs.readFileSync(`${__dirname}/templates/card.html`, "utf-8");
+
+const replaceTemplate = (template, product) => {
+	let output = template.replaceAll("{%PRODUCTNAME%}", product.productName);
+	output = output.replaceAll("{%IMAGE%}", product.image);
+	output = output.replaceAll("{%PRICE%}", product.price);
+	output = output.replaceAll("{%FROM%}", product.from);
+	output = output.replaceAll("{%NUTRIENTS%}", product.nutrients);
+	output = output.replaceAll("{%QUANTITY%}", product.quantity);
+	output = output.replaceAll("{%DESCRIPTION%}", product.description);
+	output = output.replaceAll("{%ID%}", product.id);
+	if (!product.organic)
+		output = output.replaceAll("{%NOTORGANIC%}", "not-organic");
+	return output;
+};
 
 // 3- Creating a simple server
 const server = http.createServer((req, res) => {
 	const pathName = req.url;
+
+	// Overview page
 	if (pathName === "/" || pathName === "/overview") {
-		res.end("Welcome to our homepage");
+		const cardsHtml = dataObj
+		.map((product) => replaceTemplate(card, product))
+		.join("");
+		const output = overview.replace("{%PRODUCTCARDS%}", cardsHtml);
+		
+		res.writeHead(200, { "Content-type": "text/html" });
+		res.end(output);
+		
+		// Product page
 	} else if (pathName === "/product") {
-		res.end("Welcome to our product page");
+		res.writeHead(200, { "Content-type": "text/html" });
+		
+		res.end(product);
+
+		// API page
 	} else if (pathName === "/api") {
 		// 4- Simple API
 		// its a service that provides data to other applications through endpoints
 		// __dirname is a global variable that holds the path to the current directory in CommonJS modules but not in ES6 modules
 		res.writeHead(200, { "Content-type": "application/json" });
 		res.end(data);
+
+		// Not found page
 	} else {
 		// We can also set headers before sending the response
 		// ? whats a header you say? -> Headers are like metadata for the response, they give additional information about the response being sent to the client
