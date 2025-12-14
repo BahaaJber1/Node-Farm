@@ -2,6 +2,7 @@ import fs from "fs";
 import http from "http"; // we gonna use this to implement a simple server
 import { dirname } from "path";
 import { fileURLToPath } from "node:url";
+import { replaceTemplate } from "./modules/replaceTemplate.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -55,20 +56,6 @@ const overview = fs.readFileSync(
 );
 const product = fs.readFileSync(`${__dirname}/templates/product.html`, "utf-8");
 const card = fs.readFileSync(`${__dirname}/templates/card.html`, "utf-8");
-
-const replaceTemplate = (template, product) => {
-	let output = template.replaceAll("{%PRODUCTNAME%}", product.productName);
-	output = output.replaceAll("{%IMAGE%}", product.image);
-	output = output.replaceAll("{%PRICE%}", product.price);
-	output = output.replaceAll("{%FROM%}", product.from);
-	output = output.replaceAll("{%NUTRIENTS%}", product.nutrients);
-	output = output.replaceAll("{%QUANTITY%}", product.quantity);
-	output = output.replaceAll("{%DESCRIPTION%}", product.description);
-	output = output.replaceAll("{%ID%}", product.id);
-	if (!product.organic)
-		output = output.replaceAll("{%NOTORGANIC%}", "not-organic");
-	return output;
-};
 
 // 3- Creating a simple server
 const server = http.createServer((req, res) => {
