@@ -1,7 +1,7 @@
 import fs from "fs";
 import http from "http"; // we gonna use this to implement a simple server
 import { dirname } from "path";
-import url, { fileURLToPath } from "url";
+import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -72,26 +72,36 @@ const replaceTemplate = (template, product) => {
 
 // 3- Creating a simple server
 const server = http.createServer((req, res) => {
-	const pathName = req.url;
+	const pathname = req.url;
+	const productId = Number(pathname.split("=")[1]);
+	console.log({ productId, pathname });
 
 	// Overview page
-	if (pathName === "/" || pathName === "/overview") {
+	if (pathname === "/" || pathname === "/overview") {
 		const cardsHtml = dataObj
-		.map((product) => replaceTemplate(card, product))
-		.join("");
+			.map((product) => replaceTemplate(card, product))
+			.join("");
 		const output = overview.replace("{%PRODUCTCARDS%}", cardsHtml);
-		
+
 		res.writeHead(200, { "Content-type": "text/html" });
 		res.end(output);
-		
-		// Product page
-	} else if (pathName === "/product") {
-		res.writeHead(200, { "Content-type": "text/html" });
-		
-		res.end(product);
 
+		// Product page
+	} else if (pathname.startsWith("/product")) {
+		if (productId >= 0 && productId < dataObj.length) {
+			const productData = dataObj[productId];
+			const output = replaceTemplate(product, productData);
+			console.log({ output });
+
+			res.writeHead(200, { "Content-type": "text/html" });
+
+			res.end(output);
+		} else {
+			res.writeHead(404, { "Content-type": "text/html" });
+			res.end("<h1>Product not found!</h1>");
+		}
 		// API page
-	} else if (pathName === "/api") {
+	} else if (pathname === "/api") {
 		// 4- Simple API
 		// its a service that provides data to other applications through endpoints
 		// __dirname is a global variable that holds the path to the current directory in CommonJS modules but not in ES6 modules
