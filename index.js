@@ -1,8 +1,9 @@
 import fs from "fs";
 import http from "http"; // we gonna use this to implement a simple server
-import { dirname } from "path";
 import { fileURLToPath } from "node:url";
+import { dirname } from "path";
 import { replaceTemplate } from "./modules/replaceTemplate.js";
+import slugify from "slugify";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -56,6 +57,11 @@ const overview = fs.readFileSync(
 );
 const product = fs.readFileSync(`${__dirname}/templates/product.html`, "utf-8");
 const card = fs.readFileSync(`${__dirname}/templates/card.html`, "utf-8");
+
+const slugs = dataObj.map((product) =>
+	slugify(product.productName, { lower: true })
+);
+console.log(slugs);
 
 // 3- Creating a simple server
 const server = http.createServer((req, res) => {
